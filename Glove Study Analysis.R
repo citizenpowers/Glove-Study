@@ -10,7 +10,7 @@ library(lubridate)
 library(tidyr)
 library(grid)
 library(plotrix)
-
+citation(plotrix)
 # Import Data -------------------------------------------------------------
 
 
@@ -28,7 +28,7 @@ Glove_Data_tidy <- NOX_data %>%
 mutate(Comments=`John Comment from COC`)  %>%              #create comments column
 bind_rows(NH4_data) %>%                                    #join NH4 data
 mutate(`Treatment`=case_when(Comments=="blank - bottle rinsed"~"Bottle Rinsed",                         #Better labels. 
-                                     Comments=="Nitrile bottle rub"~"Nitrile Bottle Rubbed",
+                                     Comments=="Nitrile bottle rub"~"Nitrile Bottle Rub",
                                      Comments=="Nitrile finger dip -1 sec"~"Nitrile 1 Second Dip",
                                      Comments=="Nitrile finger dip -10 sec"~"Nitrile 10 Second Dip",
                                      Comments=="Nitrile inside out bottle rub"~"Nitrile Inside Out Rub",
@@ -39,7 +39,7 @@ mutate(`Treatment`=case_when(Comments=="blank - bottle rinsed"~"Bottle Rinsed", 
                                      Comments=="Vinyl finger dip -10 sec"~"Vinyl 10 Second Dip",
                                      Comments=="Unrinsed Bottle"~"Unrinsed Bottle",
                                      TRUE~as.character(Comments)))  %>%
-mutate(`Treatment` = factor(`Treatment`, levels = c("Unrinsed Bottle", "Bottle Rinsed","Vinyl 1 Second Dip","Vinyl 10 Second Dip","Nitrile Bottle Rubbed","Nitrile 1 Second Dip","Nitrile 10 Second Dip","Nitrile Inside Out Rub","Nitrile Rinsed Rub","Nitrile Rinsed 1 Second Dip","Nitrile Rinsed 10 Second Dip")))  
+mutate(`Treatment` = factor(`Treatment`, levels = c("Unrinsed Bottle", "Bottle Rinsed","Vinyl 1 Second Dip","Vinyl 10 Second Dip","Nitrile Bottle Rub","Nitrile 1 Second Dip","Nitrile 10 Second Dip","Nitrile Inside Out Rub","Nitrile Rinsed Rub","Nitrile Rinsed 1 Second Dip","Nitrile Rinsed 10 Second Dip")))  
 
 # Summary Table -----------------------------------------------------------
 
@@ -64,7 +64,7 @@ ggsave("Figures/Potential Nitrogen Contamination from Different Gloves Types.jpe
 ggplot(filter(Glove_Data_tidy, TEST_NAME=="NOX"),aes(Treatment,VALUE*1000,color=TEST_NAME,fill=TEST_NAME))+geom_boxplot(color="black",fill="grey80")+#geom_jitter(color="black",fill="grey50",shape=21,height=0,width = .15)+
 scale_y_continuous(breaks = pretty_breaks(10))+scale_fill_brewer(palette = "Set1")+theme_bw()+
 annotate("text", x = "Vinyl 10 Second Dip", y = -12, label = "MDL 5",color="grey40",size=5)+geom_hline(yintercept = 5,linetype="dotted",color="grey30",size=1)+   #Add MDL
-geom_segment(aes(x = "Vinyl 10 Second Dip", y = -7.5, xend = "Nitrile Bottle Rubbed", yend = 3), colour='grey30', size=1,arrow = arrow(length = unit(0.25, "cm")))+  #Add arrow to MDL
+geom_segment(aes(x = "Vinyl 10 Second Dip", y = -7.5, xend = "Nitrile Bottle Rub", yend = 3), colour='grey30', size=1,arrow = arrow(length = unit(0.25, "cm")))+  #Add arrow to MDL
 annotate("text", x = "Nitrile Inside Out Rub", y = 26, label = "PQL 10",color="grey40",size=5)+geom_hline(yintercept = 10,linetype="longdash",color="grey30",size=1)+   #Add PQL
 geom_segment(aes(x = "Nitrile Inside Out Rub", y = 20, xend = "Nitrile 10 Second Dip", yend = 11.5), colour='grey30', size=1,arrow = arrow(length = unit(0.25, "cm")))+  #Add arrow to PQL
 geom_hline(yintercept = 0)+
@@ -86,7 +86,7 @@ axis.break(2, from, breakcol="grey80", style="gap")
 axis.break(2, from*(1+0.02), breakcol="black", style="slash")
 axis.break(4, from*(1+0.02), breakcol="black", style="slash")
 ablineclip(h = c(0,5,10,20,50,75,100,125,150),lty = 3, col = "grey")
-staxlab(side=1,at=c(1:11),labels=c("Bottle Rinsed","Vinyl 1 Second Dip","Vinyl 10 Second Dip","Nitrile 1 Second Dip","Nitrile 10 Second Dip","Nitrile Rinsed 1 Second Dip","Nitrile Rinsed 10 Second Dip","Nitrile Bottle Rubbed","Nitrile Inside Out Rub","Nitrile Rinsed Rub","Unrinsed Bottle"),
+staxlab(side=1,at=c(1:11),labels=c("Bottle Rinsed","Vinyl 1 Second Dip","Vinyl 10 Second Dip","Nitrile 1 Second Dip","Nitrile 10 Second Dip","Nitrile Rinsed 1 Second Dip","Nitrile Rinsed 10 Second Dip","Nitrile Bottle Rub","Nitrile Inside Out Rub","Nitrile Rinsed Rub","Unrinsed Bottle"),
         top.line=0.2,line.spacing=0.1,srt=45,ticklen=0.03,adj=.9,xlab="Treatment")
 staxlab(side=2,at=c(0,5,10,20,27.5,50,75,100,125,150),labels=c(0,"MDL 5","PQL 10",20,150,175,200,225,250," "),top.line=0.5,line.spacing=0.8,ticklen=0.03,adj=1,srt=0)
 
