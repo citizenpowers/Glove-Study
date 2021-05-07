@@ -10,9 +10,8 @@ library(lubridate)
 library(tidyr)
 library(grid)
 library(plotrix)
-citation(plotrix)
-# Import Data -------------------------------------------------------------
 
+# Import Data -------------------------------------------------------------
 
 NOX_data <- read_excel("Data/Glove_study_201016_data_prelim.xlsx",sheet="NOx")  #import NOx data
 
@@ -20,13 +19,14 @@ NH4_data <- read_excel("Data/Glove_study_201016_data_prelim.xlsx", sheet = "NH4"
 
 Pilot_Study_data <- read_excel("Data/Pilot_Glove_Study_Data.xlsx", sheet = "Sheet1")  #import pilot study data
 
-
+LIMS_Data_with_qualifiers <- read_excel("Data/LIMS_Data_asof_201104.xlsx") #import data with 
 
 # Tidy Data ---------------------------------------------------------------
 
 Glove_Data_tidy <- NOX_data %>%               
 mutate(Comments=`John Comment from COC`)  %>%              #create comments column
 bind_rows(NH4_data) %>%                                    #join NH4 data
+select(-FLAG) %>%  #flag column unpopulated
 mutate(`Treatment`=case_when(Comments=="blank - bottle rinsed"~"Bottle Rinsed",                         #Better labels. 
                                      Comments=="Nitrile bottle rub"~"Nitrile Bottle Rub",
                                      Comments=="Nitrile finger dip -1 sec"~"Nitrile 1 Second Dip",
@@ -39,7 +39,8 @@ mutate(`Treatment`=case_when(Comments=="blank - bottle rinsed"~"Bottle Rinsed", 
                                      Comments=="Vinyl finger dip -10 sec"~"Vinyl 10 Second Dip",
                                      Comments=="Unrinsed Bottle"~"Unrinsed Bottle",
                                      TRUE~as.character(Comments)))  %>%
-mutate(`Treatment` = factor(`Treatment`, levels = c("Unrinsed Bottle", "Bottle Rinsed","Vinyl 1 Second Dip","Vinyl 10 Second Dip","Nitrile Bottle Rub","Nitrile 1 Second Dip","Nitrile 10 Second Dip","Nitrile Inside Out Rub","Nitrile Rinsed Rub","Nitrile Rinsed 1 Second Dip","Nitrile Rinsed 10 Second Dip")))  
+mutate(`Treatment` = factor(`Treatment`, levels = c("Unrinsed Bottle", "Bottle Rinsed","Vinyl 1 Second Dip","Vinyl 10 Second Dip","Nitrile Bottle Rub","Nitrile 1 Second Dip","Nitrile 10 Second Dip","Nitrile Inside Out Rub","Nitrile Rinsed Rub","Nitrile Rinsed 1 Second Dip","Nitrile Rinsed 10 Second Dip"))) %>% 
+left_join(select(LIMS_Data_with_qualifiers,SAMPLE_ID,FLAG,TEST_NAME),by=c("SAMPLE_ID","TEST_NAME"),keep=FALSE)   #Added populated flag data
 
 # Summary Table -----------------------------------------------------------
 
@@ -48,6 +49,25 @@ group_by(`Treatment`,TEST_NAME) %>%
 summarise(n=n(),min=min(VALUE,na.rm = TRUE),max=max(VALUE,na.rm = TRUE),Range=paste(min,"-",max),   mean=mean(VALUE,na.rm = TRUE),median=median(VALUE,na.rm = TRUE))
 
 write_csv(Summary_table,path ="./Data/Summary_table.csv")
+
+
+NOx_table <- Glove_Data_tidy %>%
+filter(TEST_NAME=="NOX") %>%
+select(Treatment,COLLECT_DATE,SAMPLE_ID,VALUE,UNITS,MDL,FLAG) %>%
+mutate(`Treatment` = factor(`Treatment`, levels = c("Unrinsed Bottle", "Bottle Rinsed","Vinyl 1 Second Dip","Vinyl 10 Second Dip","Nitrile Bottle Rub","Nitrile 1 Second Dip","Nitrile 10 Second Dip","Nitrile Inside Out Rub","Nitrile Rinsed Rub","Nitrile Rinsed 1 Second Dip","Nitrile Rinsed 10 Second Dip"))) %>%
+arrange(`Treatment`)  
+
+write_csv(NOx_table,path ="./Data/NOx_table.csv")
+  
+NH4_table <- Glove_Data_tidy %>%
+filter(TEST_NAME=="NH4") %>%
+select(Treatment,COLLECT_DATE,SAMPLE_ID,VALUE,UNITS,MDL,FLAG) %>%
+mutate(`Treatment` = factor(`Treatment`, levels = c("Unrinsed Bottle", "Bottle Rinsed","Vinyl 1 Second Dip","Vinyl 10 Second Dip","Nitrile Bottle Rub","Nitrile 1 Second Dip","Nitrile 10 Second Dip","Nitrile Inside Out Rub","Nitrile Rinsed Rub","Nitrile Rinsed 1 Second Dip","Nitrile Rinsed 10 Second Dip"))) %>%
+arrange(`Treatment`)  
+
+write_csv(NH4_table,path ="./Data/NH4_table.csv")
+
+
 
 # Figures -----------------------------------------------------------------
 
