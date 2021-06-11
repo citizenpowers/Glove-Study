@@ -104,9 +104,10 @@ par(mar=c(10,5,0.5,0.5)) #set margins around plot
 gap.boxplot(NOxData ,gap.axis="y",col="grey80",gap=list(top=c(to,from),bottom=c(NA,NA)),axes = FALSE)
 axis.break(2, from, breakcol="grey80", style="gap") 
 axis.break(2, from*(1+0.02), breakcol="black", style="slash")
-axis.break(4, from*(1+0.02), breakcol="black", style="slash")
+axis.break(4, from*(1+0.02), breakcol="black", style="slash")  
 ablineclip(h = c(0,5,10,20,50,75,100,125,150),lty = 3, col = "grey")
-staxlab(side=1,at=c(1:11),labels=c("Bottle Rinsed","Vinyl 1 Second Dip","Vinyl 10 Second Dip","Nitrile 1 Second Dip","Nitrile 10 Second Dip","Nitrile Rinsed 1 Second Dip","Nitrile Rinsed 10 Second Dip","Nitrile Bottle Rub","Nitrile Inside Out Rub","Nitrile Rinsed Rub","Unrinsed Bottle"),
+staxlab(side=1,labels=c("Unrinsed Bottle","Bottle Rinsed","Vinyl 1 Second Dip","Vinyl 10 Second Dip","Nitrile Bottle Rub","Nitrile 1 Second Dip","Nitrile 10 Second Dip","Nitrile Inside Out Rub",
+                        "Nitrile Rinsed Rub","Nitrile Rinsed 1 Second Dip","Nitrile Rinsed 10 Second Dip"),
         top.line=0.2,line.spacing=0.1,srt=45,ticklen=0.03,adj=.9,xlab="Treatment")
 staxlab(side=2,at=c(0,5,10,20,27.5,50,75,100,125,150),labels=c(0,"MDL 5","PQL 10",20,150,175,200,225,250," "),top.line=0.5,line.spacing=0.8,ticklen=0.03,adj=1,srt=0)
 
