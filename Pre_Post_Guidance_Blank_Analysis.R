@@ -17,7 +17,9 @@ library(rvest)
 library(ggpmisc)
 library(ggridges)
 library(RVAideMemoire)
+library(rcompanion)
 
+ 
 #Steps
 #1.) 
 #2.) 
@@ -210,6 +212,15 @@ NOX_matrix = as.matrix(read.table(textConnection(NOx_Input), header=TRUE,row.nam
 .05/7
 G.test(NOX_matrix )
 pairwise.G.test(NOX_matrix,p.method = "none")    
+
+
+fisher.test(NOX_matrix,alternative="two.sided",simulate.p.value=TRUE)
+
+PT <-pairwiseNominalIndependence(NOX_matrix,fisher = TRUE,gtest  = FALSE,chisq  = FALSE, digits = 3)
+
+cldList(comparison = PT$Comparison,
+        p.value    = PT$p.adj.Fisher,
+        threshold  = 0.05)
 
 Hits_by_year_NH4 <- Hits_by_year %>%
 filter(TEST_NAME=="AMMONIA-N") %>%

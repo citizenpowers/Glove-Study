@@ -46,7 +46,7 @@ left_join(select(LIMS_Data_with_qualifiers,SAMPLE_ID,FLAG,TEST_NAME),by=c("SAMPL
 
 Summary_table <- Glove_Data_tidy %>%
 group_by(`Treatment`,TEST_NAME) %>%
-summarise(n=n(),min=min(VALUE,na.rm = TRUE),max=max(VALUE,na.rm = TRUE),Range=paste(min,"-",max),   mean=mean(VALUE,na.rm = TRUE),median=median(VALUE,na.rm = TRUE))
+summarise(n=n(),min=min(VALUE,na.rm = TRUE),max=max(VALUE,na.rm = TRUE),Range=paste(min,"-",max),   mean=mean(VALUE,na.rm = TRUE),median=median(VALUE,na.rm = TRUE),`non-detects`=sum(FLAG=="U",na.rm=TRUE),`detects`=sum(is.na(FLAG)==TRUE)+sum(FLAG!="U",na.rm = TRUE),`% Equal or Greater than MDL`=percent(`detects`/5))
 
 write_csv(Summary_table,path ="./Data/Summary_table.csv")
 
@@ -66,8 +66,6 @@ mutate(`Treatment` = factor(`Treatment`, levels = c("Unrinsed Bottle", "Bottle R
 arrange(`Treatment`)  
 
 write_csv(NH4_table,path ="./Data/NH4_table.csv")
-
-
 
 # Figures -----------------------------------------------------------------
 
@@ -150,12 +148,70 @@ ggsave("Figures/NOx Contamination from Worst Case Scenario Glove Treatment.jpeg"
 
 
 
+# Fisher Exact test  ---------------------------------------------------------
 
-# Hypothesis test ---------------------------------------------------------
+#From summary Table of detections
+#Treatment                      Hits  non_detects
+#Bottle Rinsed                  0   5 
+#Vinyl 1 Second Dip             0   5
+#Vinyl 10 Second Dip            0   5 
+#Nitrile 1 Second Dip           5   0
+#Nitrile 10 Second Dip          5   0
+#Nitrile Rinsed 1 Second Dip    0   5
+#Nitrile Rinsed 10 Second Dip   1   4
+#Nitrile Bottle Rub             5   0
+#Nitrile Inside Out Rub         0   5
+#Nitrile Rinsed Rub             0   5
+#Unrinsed Bottle                0   5 
 
-NOX<- filter(Glove_Data_tidy,TEST_NAME=="NOX")
 
-kruskal.test(Treatment~  VALUE, data = NOX)
+#NOX glove data   - Use abreviations for treatment names. Also zeros will not work in  names?
+NOx_Glove_Input =("Treatment      Hits  non_detects
+                  BR              0     5
+                  V1D             0     5
+                  V1OD            0     5
+                  N1D             5     0
+                  N1OD            5     0
+                  NR1D            0     5
+                  NR1OD           1     4
+                  NBR             5     0
+                  NBIOR           0     5 
+                  NRR             0     5 
+                  UB              0     5 ")
 
+#Create matrix from NOx DF
+NOX__glove_matrix = as.matrix(read.table(textConnection(NOx_Glove_Input), header=TRUE,row.names=1))
 
+#run fisher exact test
+fisher.test(NOX__glove_matrix,alternative="two.sided")
+
+#Pairwise comaprison
+FE_glove_test <-pairwiseNominalIndependence(NOX__glove_matrix,fisher = TRUE,gtest  = FALSE,chisq  = FALSE, digits = 3)
+
+#display significance with letters
+cldList(comparison = FE_glove_test$Comparison,p.value    = FE_glove_test$p.adj.Fisher,threshold  = 0.05)
+
+#Fisher Exact Test for NH3
+NH3_Glove_Input =("Treatment      Hits  non_detects
+                  BR              0     5
+                  V1D             0     5
+                  V1OD            0     5
+                  N1D             0     5
+                  N1OD            0     5
+                  NR1D            1     4
+                  NR1OD           0     5
+                  NBR             0     5
+                  NBIOR           0     5 
+                  NRR             0     5 
+                  UB              0     5 ")
+
+NH3__glove_matrix = as.matrix(read.table(textConnection(NH3_Glove_Input), header=TRUE,row.names=1))
+
+fisher.test(NH3__glove_matrix,alternative="two.sided")
+
+FE_glove_test_NH3 <-pairwiseNominalIndependence(NH3__glove_matrix,fisher = TRUE,gtest  = FALSE,chisq  = FALSE, digits = 3)
+
+cldList(comparison = FE_glove_test_NH3$Comparison,
+        p.value    = FE_glove_test_NH3$p.adj.Fisher,
+        threshold  = 0.05)
 
