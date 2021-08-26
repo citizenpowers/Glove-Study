@@ -19,21 +19,20 @@ library(ggridges)
 library(RVAideMemoire)
 library(rcompanion)
 
-citation("RVAideMemoire") 
-citation("rcompanion") 
-citation()
 
 #Steps
+#0.1) Run user defined helper functions.  
 #1.) Import from DBHYDRO database- Only run if data need to be updated. 
-#2.) 
+#2.) Import data from csv files if no update is needed. 
 #3.) Tidy data. puts data in standard format
-#4.) Run functions. THese help break analysis into managable steps
-#5.) Run Blank ANalysis. Creates figs and tables
-#6.) Run markdown file. Takes figs and table and knits into report.
+#4.) Find pre-guidance QC blank hits 
+#5.) Find post guidance QC blank hits
+#6.) Join Data
+#7.) Run fisher's exact test on pre and post hit frequency
 
 
 
-# Import from DBHYDRO -----------------------------------------------------
+#Step 1: Import from DBHYDRO -----------------------------------------------------
 
 DBHYDRO  <- odbcConnect("wrep", uid="", pwd="", believeNRows=FALSE) # Connect to DBHYDRO using user login and PW info
 odbcGetInfo(DBHYDRO) # Just for checking the connection
@@ -90,7 +89,7 @@ write.csv(QC_data,"Data/QC Data.csv")
 
 
 
-# Import data from CSV ----------------------------------------------------
+#Step 2: Import data from CSV ----------------------------------------------------
 
 
 EB_data <-read_csv("Data/EB Data.csv")
@@ -102,7 +101,7 @@ FB_data <- read_csv("Data/FB Data.csv")
 QC_data <- read_csv("Data/Qc Data.csv")
 
 
-# Tidy Data ---------------------------------------------------------------
+#Step 3: Tidy Data ---------------------------------------------------------------
 Study_analytes <- c("PHOSPHATE, ORTHO AS P","NITRATE+NITRITE-N","AMMONIA-N","PHOSPHATE, TOTAL AS P","CARBON, TOTAL ORGANIC","CHLORIDE","TOTAL NITROGEN")
 NOX_NH4 <- c("NITRATE+NITRITE-N","AMMONIA-N")
 Excluded_Projects  <- c("ACRA","RAIN","S356FT","EVER","C111SC","TOHONRP")
@@ -144,7 +143,7 @@ rowwise() %>%
 mutate(PNUM=str_sub(SAMPLE_ID,0,str_locate(SAMPLE_ID,"-")[1]))%>%
 ungroup()
 
-# Pre-Guidance Analytes above MDL by Frequency -------------------------------
+#Step 4: Pre-Guidance Analytes above MDL by Frequency -------------------------------
 
 Pre_guidance_Top_above_PQL_MDL <-Quality_Control_Blanks(Pre_guidance_tidy) %>%
 gather("Blank Type","Value",8:10) %>%
@@ -178,7 +177,7 @@ Pre_guidance_Top_above_MDL_top_hits_plot <-ggplot(Pre_guidance_Top_above_MDL_top
 ggsave("./N Contamination Data/Pre Guidance Blanks above MDL by Analyte.jpeg",plot=Pre_guidance_Top_above_MDL_top_hits_plot ,height=5,width=11,units="in")
 
 
-# Post Guidance Blanks above MDL ------------------------------------------
+#Step 5: Post Guidance Blanks above MDL ------------------------------------------
 
 Post_guidance_Top_above_PQL_MDL <-Quality_Control_Blanks(Post_guidance_tidy) %>%
 gather("Blank Type","Value",8:10) %>%
@@ -212,7 +211,7 @@ Post_guidance_Top_above_MDL_top_hits_plot <-ggplot(Post_guidance_Top_above_MDL_t
 ggsave("/Figures/Post Guidabce Blanks above MDL by Analyte.jpeg",plot=Post_guidance_Top_above_MDL_top_hits_plot ,height=5,width=11,units="in")
 
 
-# Pre and Post guidance joined --------------------------------------------
+#Step 6: Pre and Post guidance joined --------------------------------------------
 
 Pre_post_Guidance_data <-select(Pre_guidance_Top_above_MDL_top_hits,TEST_NAME,`Percent Total Blanks Greater Than MDL`) %>%
 rename(`Pre-Guidance`="Percent Total Blanks Greater Than MDL" ) %>%
@@ -229,7 +228,7 @@ ggsave("./Figures/Pre and post-guidance Blank hit Frequency.jpeg",plot=Pre_post_
 
 
 
-# Fishers Exact Test ------------------------------------------------------
+#Step 7: Fishers Exact Test ------------------------------------------------------
 
 #filter data to March 1st to June 8th for 2019 and 2020 to compare against post-guidance period in 2021
 Hits_by_year <- bind_rows(EB_data_tidy,FB_data_tidy,FCEB_data_tidy) %>%   #combine dataframes into single df
@@ -324,7 +323,7 @@ NH4_matrix = as.matrix(read.table(textConnection(NH4_Input), header=TRUE,row.nam
 G.test(NH4_matrix )
 pairwise.G.test(NH4_matrix,p.method = "none")  
 
-# #Fig 6 study analytes ---------------------------------------------------
+#Fig 6 study analytes ---------------------------------------------------
 
 
 NOX_NH4_study <- All_Blanks_hit_freq_wide %>%
@@ -354,7 +353,7 @@ scale_x_date(date_breaks  ="3 month",labels=date_format("%b %y"),limits=c(as.Dat
 ggsave("./N Contamination Data/Study_analytes_freq_blank_hits_NOX_NH4_study_plot.jpeg",plot=NOX_NH4_study_plot  ,height=8,width=11,units="in")
 
 
-# #Fig 7: blank hit by blank type -----------------------------------------
+#Fig 7: blank hit by blank type -----------------------------------------
 
 
 All_Blanks_hit_freq_type_plot <- ggplot(filter(All_Blanks_hit_freq,str_detect(`Blank Type`,"B Percent >MDL")),aes(make_date(YEAR,MONTH,1),VALUE,fill=`Blank Type`,color=`Blank Type`))+
@@ -365,7 +364,7 @@ labs(x="Date",y="Monthly Blank Hit Frequency (%)",title = "")+scale_x_date(date_
 ggsave("./N Contamination Data/All_Blanks_hit_freq_type_MDL_plot 2019.jpeg",plot=All_Blanks_hit_freq_type_plot  ,height=12,width=11,units="in")
 
 
-# #Fig 8: blank hit by blank type -----------------------------------------
+#Fig 8: blank hit by blank type -----------------------------------------
 
 All_Blanks_hit_freq_type_study_plot <- ggplot(filter(All_Blanks_hit_freq_study,str_detect(`Blank Type`,"B Percent >MDL")),aes(make_date(YEAR,MONTH,15),VALUE,fill=`Blank Type`))+geom_rect(xmin = make_date(2020,5,1), ymin=0, xmax=make_date(2020,12,1), ymax = 1,fill="grey",alpha=.05)+  
 geom_col(color="black")+facet_grid(TEST_NAME~`Blank Type`)+theme_bw()+scale_fill_brewer(palette = "Set2")+scale_color_brewer(palette = "Set2")+
@@ -375,7 +374,7 @@ labs(x="Date",y="Monthly Blank Hit Frequency (%)",title = "")+scale_x_date(date_
 ggsave("./N Contamination Data/All_Blanks_hit_freq_type_study_plot 2019.jpeg",plot=All_Blanks_hit_freq_type_study_plot  ,height=14,width=11,units="in")
 
 
-# Other figs --------------------------------------------------------------
+#Other figs --------------------------------------------------------------
 
 
 # Percent greater than MDL of hits
@@ -428,7 +427,7 @@ labs(x="Month",y="Frequency of Blanks above MDL (%)",title = "")
 ggsave("./N Contamination Data/Seasonal_trends- study analytes.jpeg",plot=Seasonal_trends,height=8,width=11,units="in")
 
 #
-# Functions ---------------------------------------------------------------
+#Helper Functions ---------------------------------------------------------------
 
 Find_EB <-function(df)   #
 {  
