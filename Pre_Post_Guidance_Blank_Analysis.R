@@ -32,7 +32,7 @@ library(rcompanion)
 
 
 
-#Step 1: Import from DBHYDRO -----------------------------------------------------
+#Step 1: Import from DBHYDRO -------------Data last updated 8/25/21------------------------------------
 
 DBHYDRO  <- odbcConnect("wrep", uid="", pwd="", believeNRows=FALSE) # Connect to DBHYDRO using user login and PW info
 odbcGetInfo(DBHYDRO) # Just for checking the connection
@@ -70,25 +70,11 @@ All_FB_Connection_String <- ("SELECT SAMPLE_WITH_QC_VIEW.PROJECT_CODE, SAMPLE_WI
 
 FB_data <- sqlQuery(DBHYDRO, All_FB_Connection_String  ) #all FB Data 
 
-All_QC_Connection_String <- ("SELECT SAMPLE_WITH_QC_VIEW.PROJECT_CODE, SAMPLE_WITH_QC_VIEW.SAMPLE_ID, SAMPLE_WITH_QC_VIEW.STATION_ID, SAMPLE_WITH_QC_VIEW.DATE_COLLECTED, SAMPLE_WITH_QC_VIEW.RECEIVE_DATE, SAMPLE_WITH_QC_VIEW.PROGRAM_TYPE, SAMPLE_WITH_QC_VIEW.SAMPLE_TYPE_NEW,
-                             SAMPLE_WITH_QC_VIEW.MATRIX, SAMPLE_WITH_QC_VIEW.COLLECT_METHOD, SAMPLE_WITH_QC_VIEW.SAMPLE_TYPE, SAMPLE_WITH_QC_VIEW.QCTYPE, SAMPLE_WITH_QC_VIEW.DISCHARGE, SAMPLE_WITH_QC_VIEW.UP_DWN_STREAM, SAMPLE_WITH_QC_VIEW.WEATHER_CODE, SAMPLE_WITH_QC_VIEW.COLLECTION_AGENCY,
-                             SAMPLE_WITH_QC_VIEW.COLLECTION_SPAN, SAMPLE_WITH_QC_VIEW.FIRST_TRIGGER_DATE, SAMPLE_WITH_QC_VIEW.DEPTH, SAMPLE_WITH_QC_VIEW.DEPTH_UNITS,  SAMPLE_WITH_QC_VIEW.TEST_NUMBER, SAMPLE_WITH_QC_VIEW.TEST_NAME, SAMPLE_WITH_QC_VIEW.TEST_GROUP, SAMPLE_WITH_QC_VIEW.STORET_CODE, 
-                             SAMPLE_WITH_QC_VIEW.FLAG, SAMPLE_WITH_QC_VIEW.REMARK_CODE, SAMPLE_WITH_QC_VIEW.VALUE, SAMPLE_WITH_QC_VIEW.UNITS, SAMPLE_WITH_QC_VIEW.PQL, SAMPLE_WITH_QC_VIEW.MDL, SAMPLE_WITH_QC_VIEW.RDL, SAMPLE_WITH_QC_VIEW.LOWER_DEPTH, SAMPLE_WITH_QC_VIEW.UPPER_DEPTH, SAMPLE_WITH_QC_VIEW.NDEC,
-                             SAMPLE_WITH_QC_VIEW.SIGFIG_VAL, SAMPLE_WITH_QC_VIEW.PERMIT_NUMBER, SAMPLE_WITH_QC_VIEW.SOURCE,SAMPLE_WITH_QC_VIEW.LIMS_NUMBER, SAMPLE_WITH_QC_VIEW.MEASURE_DATE,SAMPLE_WITH_QC_VIEW.METHOD, SAMPLE_WITH_QC_VIEW.OWNER, SAMPLE_WITH_QC_VIEW.TDEPTH, SAMPLE_WITH_QC_VIEW.SAMP_TAG, 
-                             SAMPLE_WITH_QC_VIEW.SAMPLE_DESCRIPTION,  SAMPLE_WITH_QC_VIEW.ANALYST, SAMPLE_WITH_QC_VIEW.LOGIN_USER, SAMPLE_WITH_QC_VIEW.DTIM_ENTERED, SAMPLE_WITH_QC_VIEW.DTIM_MOD,SAMPLE_WITH_QC_VIEW.WORK_LAB, SAMPLE_WITH_QC_VIEW.WQ_RESULT_DATA_ID, SAMPLE_WITH_QC_VIEW.INDEX_ID, 
-                             SAMPLE_WITH_QC_VIEW.PREP_DATE, SAMPLE_WITH_QC_VIEW.ALTERNATE_ID, SAMPLE_WITH_QC_VIEW.PREP_PROC_CODE, SAMPLE_WITH_QC_VIEW.DILUTION, SAMPLE_WITH_QC_VIEW.VALIDATION_LEVEL, SAMPLE_WITH_QC_VIEW.VALIDATOR, SAMPLE_WITH_QC_VIEW.SAMPLING_PURPOSE, SAMPLE_WITH_QC_VIEW.DATA_INVESTIGATION,
-                             SAMPLE_WITH_QC_VIEW.UNCERTAINTY, SAMPLE_WITH_QC_VIEW.DCS, SAMPLE_WITH_QC_VIEW.FILTRATION_DATE FROM WQDORA.SAMPLE_WITH_QC_VIEW SAMPLE_WITH_QC_VIEW WHERE (SAMPLE_WITH_QC_VIEW.SAMPLE_TYPE_NEW='QC')")
-
-QC_data <- sqlQuery(DBHYDRO, All_QC_Connection_String ) #all EB1 Data 
-
 #write data to csv    Data updated 11/5/20. data up to 10/15/20
 write.csv(FCEB_data,"Data/FCEB Data.csv")
 write.csv(EB_data,"Data/EB Data.csv")
 write.csv(FB_data,"Data/FB Data.csv")
-write.csv(QC_data,"Data/QC Data.csv")
-
-
-
+  
 #Step 2: Import data from CSV ----------------------------------------------------
 
 
@@ -97,8 +83,6 @@ EB_data <-read_csv("Data/EB Data.csv")
 FCEB_data <- read_csv("Data/FCEB Data.csv")
 
 FB_data <- read_csv("Data/FB Data.csv")
-
-QC_data <- read_csv("Data/Qc Data.csv")
 
 
 #Step 3: Tidy Data ---------------------------------------------------------------
@@ -235,9 +219,9 @@ Hits_by_year <- bind_rows(EB_data_tidy,FB_data_tidy,FCEB_data_tidy) %>%   #combi
 filter(PROJECT_CODE %in% Excluded_Projects != TRUE) %>%   #Excluded projects list.
 filter(DATE_COLLECTED>"2015-01-01 00:00:00") %>%
 mutate(Year=year(DATE_COLLECTED),Month=month(DATE_COLLECTED),Day=day(DATE_COLLECTED)) %>%
-filter(Month >=3, Month <=6) %>%
-filter(if_else(Month==6 & Day >8,TRUE,FALSE)==FALSE) %>%  #Exclude data from June 9 onward for each year
-filter(TEST_NAME %in% NOX_NH4) %>%  
+filter(Month >=3, Month <=8) %>%
+filter(if_else(Month==8 & Day >16,TRUE,FALSE)==FALSE) %>%  #Exclude data from Aug 16 onward for each year
+#filter(TEST_NAME %in% NOX_NH4) %>%  
 rowwise() %>%
 mutate(PNUM=str_sub(SAMPLE_ID,0,str_locate(SAMPLE_ID,"-")[1]))%>%
 ungroup() %>%
@@ -246,6 +230,14 @@ mutate(Year=year(DATE)) %>%
 gather("Blank Type","Value",8:10) %>%
 group_by(TEST_NAME,Year) %>%
 Blank_Hit_Summary()
+
+#DF of hit frequency for Analytes
+Hits_by_year_All <- Hits_by_year %>%
+ungroup() %>%
+mutate(`Non_detects`=`Total Blanks`-`Total Blanks Greater Than MDL`,`Hit Frequency`=percent(`Total Blanks Greater Than MDL`/`Total Blanks`))  %>%
+select(TEST_NAME,Year,`Total Blanks Greater Than MDL`,`Non_detects`,`Hit Frequency`) %>%
+rename(`Detects`="Total Blanks Greater Than MDL") 
+
 
 #DF of hit frequency for NOx
 Hits_by_year_NOx <- Hits_by_year %>%
@@ -257,7 +249,7 @@ rename(`Detects`="Total Blanks Greater Than MDL")  %>%
 mutate(Year=as.character(Year))%>%  
 as.matrix(header=TRUE,row.names=1)
 
-#NOX 2015- 2021
+#NOX 2015- 2021 date range March 1st to June 8th
 NOx_Input =("Year   Hits  non_detects
         Y2015   39    525
         Y2016   24    478
@@ -268,16 +260,15 @@ NOx_Input =("Year   Hits  non_detects
         Y2021   1     434 
             ")
 
-#NOX 2015- 2021 test data
+#NOX 2015- 2021 date range March 1st to Aug 16th
 NOx_Input =("Year   Hits  non_detects
-        Y2015   39    525
-        Y2016   24    478
-        Y2017   29    407
-        Y2018   34    414
-        Y2019   23    389
-        Y2020   12    470
-        Y2021   4     631 ")
-
+        Y2015   56    885
+        Y2016   58    812
+        Y2017   70    733
+        Y2018   50    776
+        Y2019   54    704
+        Y2020   25    855
+        Y2021   5     813 ")
 
 
 
