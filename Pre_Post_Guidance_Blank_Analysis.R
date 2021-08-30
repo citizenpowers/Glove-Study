@@ -298,15 +298,15 @@ rename(`Detects`="Total Blanks Greater Than MDL")  %>%
 mutate(Year=as.character(Year))%>%  
 as.matrix(header=TRUE,row.names=1)
 
-#NH4 2015 vs 2020
+#NH4 2015 vs 2021
 NH4_Input =("Year   Hits  non_detects
-            Y2015   37    404
-            Y2016   51    294
-            Y2017   30    292
-            Y2018   17    329
-            Y2019   6     339
-            Y2020   6     416
-            Y2021   24    355    ")
+            Y2015   56    669
+            Y2016   95    522
+            Y2017   75    546
+            Y2018   34    615
+            Y2019   16    631
+            Y2020   34    751
+            Y2021   35    682    ")
 
 #Create matrix from NOx DF
 NH4_matrix = as.matrix(read.table(textConnection(NH4_Input), header=TRUE,row.names=1))

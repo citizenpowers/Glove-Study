@@ -198,7 +198,7 @@ NH3_Glove_Input =("Treatment      Hits  non_detects
                   V1OD            0     5
                   N1D             0     5
                   N1OD            0     5
-                  NR1D            1     4
+                  NR1D            2     3
                   NR1OD           0     5
                   NBR             0     5
                   NBIOR           0     5 
