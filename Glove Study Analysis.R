@@ -129,7 +129,7 @@ annotate("text", x = "Fischer Vinyl", y = 5.6, label = "MDL 5",color="grey30")+g
 annotate("text", x = "Fischer Vinyl", y = 10.6, label = "PQL 10",color="grey30")+geom_hline(yintercept = 10,linetype="longdash",color="grey30",size=1)+   #Add PDL
 geom_hline(yintercept = 0)+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
 theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=12),axis.text.y = element_text(size=12),axis.title.x = element_text(size = 12),axis.title.y = element_text(size = 12),title =element_text(size = 14) )+
-labs(title="Ammonia Contamination from Worst Case Scenario Glove Treatment",y=expression(NH4~mu*g~L^-1),x="Glove Type")  
+labs(title="Ammonia Contamination from Worst Case Scenario Glove Treatment",y=expression(NH3-N~~mu*g~L^-1),x="Glove Type")  
 
 ggsave("Figures/Ammonia Contamination from Worst Case Scenario Glove Treatment.jpeg", plot = last_plot(), width = 8, height = 8, units = "in", dpi = 300, limitsize = TRUE)
 

@@ -18,6 +18,7 @@ library(ggpmisc)
 library(ggridges)
 library(RVAideMemoire)
 library(rcompanion)
+library(pwr)
 
 
 #Steps
@@ -310,9 +311,37 @@ NH4_Input =("Year   Hits  non_detects
 
 #Create matrix from NOx DF
 NH4_matrix = as.matrix(read.table(textConnection(NH4_Input), header=TRUE,row.names=1))
-.05/7
+.05/21
 G.test(NH4_matrix )
 pairwise.G.test(NH4_matrix,p.method = "none")  
+
+
+
+
+# Power Analysis ----------------------------------------------------------
+NOx_Input =("Year   Hits  non_detects
+        Y2015   56    885
+        Y2016   58    812
+        Y2017   70    733
+        Y2018   50    776
+        Y2019   54    704
+        Y2020   25    855
+        Y2021   5     813 ")
+
+
+P<-as.data.frame(read.table(textConnection(NOx_Input), header=TRUE,row.names=1))
+
+
+effect.size = ES.w2(P) 
+
+degrees = (nrow(P)-1)*(ncol(P)-1)  # Calculate degrees of freedom
+
+pwr.chisq.test(
+  w=.1,
+  N=800,            # Total number of observations
+  df=6,
+  power=NULL,        # 1 minus Type II probability
+  sig.level=0.05)    # Type I 
 
 #Fig 6 study analytes ---------------------------------------------------
 
@@ -366,7 +395,6 @@ ggsave("./N Contamination Data/All_Blanks_hit_freq_type_study_plot 2019.jpeg",pl
 
 
 #Other figs --------------------------------------------------------------
-
 
 # Percent greater than MDL of hits
 Percent_greater_MDL<-Quality_Control_Blanks(Blank_data_tidy) %>%
