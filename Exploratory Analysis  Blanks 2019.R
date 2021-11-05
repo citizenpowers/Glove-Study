@@ -105,6 +105,14 @@ labs(x="Analyte",y="Blanks above or equal to MDL (%) ")+scale_y_continuous(break
 
 ggsave("./Figures/Blanks above MDL by Analyte 2019.jpeg",plot=Top_above_MDL_top_hits_plot ,height=6,width=10,units="in")
 
+#Ammonia Blanks FCEB vs EB
+NH3_FCEB_vs_EB <-Top_above_PQL_MDL %>%
+filter(TEST_NAME=="AMMONIA-N")  %>%
+select(TEST_NAME,`FCEB Percent >MDL`,`EB Percent >MDL`) %>%
+pivot_longer(2:3,names_to = "QC Blank Type", values_to="Values")
+
+ggplot(NH3_FCEB_vs_EB,aes(`QC Blank Type`,Values))+geom_col()+theme_bw()
+
 
 # #Figure 3 Appendix  Frequency of hits above MDL and PQL ---------------------------
 
