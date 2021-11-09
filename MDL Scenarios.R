@@ -63,7 +63,8 @@ mutate(MDL=as.numeric(MDL),PQL=as.numeric(PQL),VALUE=as.numeric(VALUE))#
 Recent_samples_tidy <- Recent_data_tidy  %>%
 filter(SAMPLE_TYPE_NEW=="SAMP") %>%
 mutate(DATE=as.Date(DATE_COLLECTED)) %>%
-filter(year(as.Date(DATE_COLLECTED))>=2019) %>%
+filter(year(as.Date(DATE_COLLECTED))<=2019) %>%
+filter(year(as.Date(DATE_COLLECTED))>=2015) %>%  
 filter(TEST_NAME !="STRONTIUM, DISSOLVED",TEST_NAME !="NITRATE-N") %>%    
 rowwise() %>%
 mutate(PNUM=str_sub(SAMPLE_ID,0,str_locate(SAMPLE_ID,"-")[1]))%>%
@@ -124,14 +125,14 @@ write_csv(Percent_Samples_Qualified ,path="./N Contamination Data/Percent_Sample
 
 
 Percent_Samples_Qualified_renamed <-Percent_Samples_Qualified %>% 
-mutate(`Percent of Data Qualified as Result of Blank Contamination`=`Qualified Data from Blank >= MDL`/`Total Samples`) %>% filter(`Percent of Data Qualified as Result of Blank Contamination`>0)
+mutate(`Percent of Data Qualified as Result of Blank Contamination`=`Qualified Data from Blank >= MDL`/`Total Samples`)# %>% filter(`Percent of Data Qualified as Result of Blank Contamination`>0)
 
 Percent_Samples_Qualified_renamed_plot  <-ggplot(Percent_Samples_Qualified_renamed ,aes(reorder(TEST_NAME,-`Percent of Data Qualified as Result of Blank Contamination`),`Percent of Data Qualified as Result of Blank Contamination`))+
 geom_col()+theme_bw()+
 theme(legend.position = "bottom",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=12),axis.text.y = element_text(size=12),axis.title.x = element_text(size = 14),axis.title.y = element_text(size = 14,hjust = 1))+
 labs(x="Analyte",y="Qualified Data from Blank Contamination (%)")+scale_y_continuous(breaks= pretty_breaks(n=10),labels = percent)
 
-ggsave("./Figures/Percent_Samples_Qualified_renamed_plot.jpeg",plot=Percent_Samples_Qualified_renamed_plot  ,height=6,width=10,units="in")
+ggsave("./Figures/Percent_Samples_Qualified_renamed_plot 2015-19.jpeg",plot=Percent_Samples_Qualified_renamed_plot  ,height=6,width=10,units="in")
 
 
 # Functions ---------------------------------------------------------------

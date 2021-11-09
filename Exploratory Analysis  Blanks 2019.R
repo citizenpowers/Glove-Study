@@ -57,7 +57,8 @@ mutate(across(where(is.double), as.character)) %>%
 mutate(MDL=as.numeric(MDL),PQL=as.numeric(PQL),VALUE=as.numeric(VALUE))
 
 Blank_data_tidy_all <- bind_rows(EB_data_tidy,FB_data_tidy,FCEB_data_tidy) %>%   #combine dataframes into single df
-filter(year(as.Date(DATE_COLLECTED))>=2019)  #filter data to 2019 or later
+filter(year(as.Date(DATE_COLLECTED))<=2019) %>% #filter data to from 2015 through 2019
+filter(year(as.Date(DATE_COLLECTED))>=2015) 
 
 Blank_data_tidy <- Blank_data_tidy_all %>%    #adds pnum column 
 rowwise() %>%
@@ -71,7 +72,7 @@ ungroup()
 Top_above_PQL_MDL <-Quality_Control_Blanks(Blank_data_tidy) %>%
 gather("Blank Type","Value",8:10) %>%
 mutate(YEAR=year(DATE)) %>% 
-filter(YEAR >=2019)    %>%    #just last two years of data 
+#filter(YEAR >=2019)    %>%    #just last two years of data 
 filter(TEST_NAME %in% c("STRONTIUM, DISSOLVED","NITRATE-N")==FALSE) %>%  
 group_by(TEST_NAME) %>%
 summarise(`Total FCEB`=sum(`Blank Type`=="FCEB" & !is.na(Value)),
@@ -98,12 +99,13 @@ summarise(`Total FCEB`=sum(`Blank Type`=="FCEB" & !is.na(Value)),
 Top_above_MDL_top_hits <-Top_above_PQL_MDL %>%
 filter(`Total Blanks`>100,`Percent Total Blanks Greater than or Equal to MDL`>0) 
 
-Top_above_MDL_top_hits_plot <-ggplot(Top_above_MDL_top_hits ,aes(reorder(TEST_NAME,-`Percent Total Blanks Greater than or Equal to MDL`),`Percent Total Blanks Greater than or Equal to PQL`))+
+#hits above MDL
+Top_above_MDL_top_hits_plot <-ggplot(Top_above_MDL_top_hits ,aes(stats::reorder(TEST_NAME,-`Percent Total Blanks Greater than or Equal to MDL`),`Percent Total Blanks Greater than or Equal to MDL`))+
 geom_col()+theme_bw()+
 theme(legend.position = "bottom",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=12),axis.text.y = element_text(size=12),axis.title.x = element_text(size = 14),axis.title.y = element_text(size = 14))+
 labs(x="Analyte",y="Blanks above or equal to MDL (%) ")+scale_y_continuous(breaks= pretty_breaks(n=10),labels = percent)
 
-ggsave("./Figures/Blanks above MDL by Analyte 2019.jpeg",plot=Top_above_MDL_top_hits_plot ,height=6,width=10,units="in")
+ggsave("./Figures/Blanks above MDL by Analyte 2015-2019.jpeg",plot=Top_above_MDL_top_hits_plot ,height=6,width=10,units="in")
 
 #Ammonia Blanks FCEB vs EB
 NH3_FCEB_vs_EB <-Top_above_PQL_MDL %>%
@@ -159,7 +161,7 @@ geom_smooth(method = "loess",se=FALSE)+facet_wrap(~TEST_NAME,ncol=1 )+theme_bw()
 scale_y_continuous(breaks= pretty_breaks(n=5),labels = percent) +theme(legend.position = "bottom",axis.text.x = element_text(angle = 90)) +
 theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=12),axis.text.y = element_text(size=12),axis.title.x = element_text(size = 12),axis.title.y = element_text(size = 12),title =element_text(size = 14),legend.text=element_text(size=12),strip.text = element_text(size=12))+
 labs(x="Date",y="Monthly Blank Hit Frequency (%)",title = "")+
-scale_x_date(labels=date_format("%b %y"),breaks =seq(as.Date('2019-01-01'),as.Date('2021-04-01'),by = "3 months") )+coord_cartesian(xlim = c(as.Date(ISOdate(2019, 01, 01, 0)),as.Date(ISOdate(2021, 04, 01, 0))))
+scale_x_date(labels=date_format("%b %y"),breaks =seq(as.Date('2015-01-01'),as.Date('2021-04-01'),by = "3 months") )+coord_cartesian(xlim = c(as.Date(ISOdate(2015, 01, 01, 0)),as.Date(ISOdate(2021, 04, 01, 0))))
 
 ggsave("./Figures/Percent_Samples_Qualified_renamed_plot.jpeg",plot=All_Blanks_hit_freq_plot ,height=6,width=10,units="in")
 
