@@ -33,7 +33,7 @@ library(pwr)
 
 
 
-#Step 1: Import from DBHYDRO -------------Data last updated 8/25/21------------------------------------
+#Step 1: Import from DBHYDRO -------------Data last updated 11/08/21------------------------------------
 
 DBHYDRO  <- odbcConnect("wrep", uid="", pwd="", believeNRows=FALSE) # Connect to DBHYDRO using user login and PW info
 odbcGetInfo(DBHYDRO) # Just for checking the connection
@@ -220,8 +220,8 @@ Hits_by_year <- bind_rows(EB_data_tidy,FB_data_tidy,FCEB_data_tidy) %>%   #combi
 filter(PROJECT_CODE %in% Excluded_Projects != TRUE) %>%   #Excluded projects list.
 filter(DATE_COLLECTED>"2015-01-01 00:00:00") %>%
 mutate(Year=year(DATE_COLLECTED),Month=month(DATE_COLLECTED),Day=day(DATE_COLLECTED)) %>%
-filter(Month >=3, Month <=8) %>%
-filter(if_else(Month==8 & Day >16,TRUE,FALSE)==FALSE) %>%  #Exclude data from Aug 16 onward for each year
+filter(Month >=4, Month <=9) %>%
+filter(if_else(Month==9 & Day >=30,TRUE,FALSE)==FALSE) %>%  #Exclude data from sept 30 onward for each year
 #filter(TEST_NAME %in% NOX_NH4) %>%  
 rowwise() %>%
 mutate(PNUM=str_sub(SAMPLE_ID,0,str_locate(SAMPLE_ID,"-")[1]))%>%
@@ -248,29 +248,18 @@ mutate(`Non_detects`=`Total Blanks`-`Total Blanks Greater Than MDL`)  %>%
 select(Year,`Total Blanks Greater Than MDL`,`Non_detects`) %>%
 rename(`Detects`="Total Blanks Greater Than MDL")  %>%
 mutate(Year=as.character(Year))%>%  
+mutate(Total=`Detects`+`Non_detects`,`Percent detect`=percent(`Detects`/Total))  %>%
 as.matrix(header=TRUE,row.names=1)
 
-#NOX 2015- 2021 date range March 1st to June 8th
+#NOX 2015- 2021 date range April 1st to sept 30th
 NOx_Input =("Year   Hits  non_detects
-        Y2015   39    525
-        Y2016   24    478
-        Y2017   29    407
-        Y2018   34    414
-        Y2019   23    389
-        Y2020   12    470
-        Y2021   1     434 
-            ")
-
-#NOX 2015- 2021 date range March 1st to Aug 16th
-NOx_Input =("Year   Hits  non_detects
-        Y2015   56    885
-        Y2016   58    812
-        Y2017   70    733
-        Y2018   50    776
-        Y2019   54    704
-        Y2020   25    855
-        Y2021   5     813 ")
-
+        Y2015   63    978
+        Y2016   74    868
+        Y2017   95    806
+        Y2018   52    856
+        Y2019   53    757
+        Y2020   34    953
+        Y2021   7     1043   ")
 
 
 #Create matrix from NOx DF
