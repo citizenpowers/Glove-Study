@@ -74,7 +74,7 @@ gather("Blank Type","Value",8:10) %>%
 mutate(YEAR=year(DATE)) %>% 
 #filter(YEAR >=2019)    %>%    #just last two years of data 
 filter(TEST_NAME %in% c("STRONTIUM, DISSOLVED","NITRATE-N")==FALSE) %>%  
-group_by(TEST_NAME) %>%
+group_by(TEST_NAME,YEAR) %>%
 summarise(`Total FCEB`=sum(`Blank Type`=="FCEB" & !is.na(Value)),
             `FCEB > MDL`=sum(`Blank Type`=="FCEB" & Value >= MDL,na.rm=TRUE),
             `FCEB Percent >MDL`=if_else(`FCEB > MDL`>0,`FCEB > MDL`/`Total FCEB`,0),
