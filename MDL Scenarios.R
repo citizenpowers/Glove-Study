@@ -49,12 +49,17 @@ write.csv(Recent_data,"Recent Data.csv")
 
 # Import data from CSV ----------------------------------------------------
 
-Recent_data <-read_csv("./Data/Recent Data.csv")   #imported 4/13/21
+Recent_data <-read_csv("./Data/Recent Data.csv")   #imported 4/13/21 2019+
+Sample_Data_2015 <- read_csv("Data/2015 Sample Data.csv")
+Sample_Data_2016 <- read_csv("Data/2016 Sample Data.csv")
+Sample_Data_2017 <- read_csv("Data/2017 Sample Data.csv")
+Sample_Data_2018 <- read_csv("Data/2018 Sample Data.csv")
+
 
 # Tidy Data ---------------------------------------------------------------
 Study_analytes <- c("PHOSPHATE, ORTHO AS P","NITRATE+NITRITE-N","AMMONIA-N","PHOSPHATE, TOTAL AS P","CARBON, TOTAL ORGANIC","CHLORIDE","TOTAL NITROGEN")
 
-Recent_data_tidy <- Recent_data %>%
+Recent_data_tidy <-  bind_rows(Sample_Data_2015,Sample_Data_2016,Sample_Data_2017,Sample_Data_2018,Recent_data) %>%   
 mutate(across(where(is.logical), as.numeric))%>%
 mutate(across(where(is.double), as.character)) %>%
 mutate(MDL=as.numeric(MDL),PQL=as.numeric(PQL),VALUE=as.numeric(VALUE))#
@@ -125,7 +130,7 @@ write_csv(Percent_Samples_Qualified ,path="./N Contamination Data/Percent_Sample
 
 
 Percent_Samples_Qualified_renamed <-Percent_Samples_Qualified %>% 
-mutate(`Percent of Data Qualified as Result of Blank Contamination`=`Qualified Data from Blank >= MDL`/`Total Samples`)# %>% filter(`Percent of Data Qualified as Result of Blank Contamination`>0)
+mutate(`Percent of Data Qualified as Result of Blank Contamination`=`Qualified Data from Blank >= MDL`/`Total Samples`) %>% filter(`Percent of Data Qualified as Result of Blank Contamination`>0)
 
 Percent_Samples_Qualified_renamed_plot  <-ggplot(Percent_Samples_Qualified_renamed ,aes(reorder(TEST_NAME,-`Percent of Data Qualified as Result of Blank Contamination`),`Percent of Data Qualified as Result of Blank Contamination`))+
 geom_col()+theme_bw()+
