@@ -10,6 +10,8 @@ library(lubridate)
 library(tidyr)
 library(grid)
 library(plotrix)
+library(RVAideMemoire)
+library(rcompanion)
 
 # Import Data -------------------------------------------------------------
 
@@ -178,6 +180,8 @@ NOx_Glove_Input =("Treatment      Hits  non_detects
                   NBIOR           0     5 
                   NRR             0     5 
                   UB              0     5 ")
+
+?p.adjust.methods
 
 #Create matrix from NOx DF
 NOX__glove_matrix = as.matrix(read.table(textConnection(NOx_Glove_Input), header=TRUE,row.names=1))

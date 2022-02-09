@@ -74,7 +74,7 @@ gather("Blank Type","Value",8:10) %>%
 mutate(YEAR=year(DATE)) %>% 
 #filter(YEAR >=2019)    %>%    #just last two years of data 
 filter(TEST_NAME %in% c("STRONTIUM, DISSOLVED","NITRATE-N")==FALSE) %>%  
-group_by(TEST_NAME,YEAR) %>%
+group_by(TEST_NAME) %>%
 summarise(`Total FCEB`=sum(`Blank Type`=="FCEB" & !is.na(Value)),
             `FCEB > MDL`=sum(`Blank Type`=="FCEB" & Value >= MDL,na.rm=TRUE),
             `FCEB Percent >MDL`=if_else(`FCEB > MDL`>0,`FCEB > MDL`/`Total FCEB`,0),
@@ -102,10 +102,10 @@ filter(`Total Blanks`>100,`Percent Total Blanks Greater than or Equal to MDL`>0)
 #hits above MDL
 Top_above_MDL_top_hits_plot <-ggplot(Top_above_MDL_top_hits ,aes(stats::reorder(TEST_NAME,-`Percent Total Blanks Greater than or Equal to MDL`),`Percent Total Blanks Greater than or Equal to MDL`))+
 geom_col()+theme_bw()+
-theme(legend.position = "bottom",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=12),axis.text.y = element_text(size=12),axis.title.x = element_text(size = 14),axis.title.y = element_text(size = 14))+
-labs(x="Analyte",y="Blanks above or equal to MDL (%) ")+scale_y_continuous(breaks= pretty_breaks(n=10),labels = percent)
+theme(plot.margin = unit(c(.2,.2,.1,.75), "cm"),legend.position = "bottom",axis.text.x = element_text(angle = 60, vjust = 1, hjust=1,size=12),axis.text.y = element_text(size=12),axis.title.x = element_text(size = 14),axis.title.y = element_text(size = 14))+
+labs(x="",y="Blanks above or equal to MDL (%) ")+scale_y_continuous(breaks= pretty_breaks(n=10),labels = percent,limits = c(0,.103), expand = c(0, 0))
 
-ggsave("./Figures/Blanks above MDL by Analyte 2015-2019.jpeg",plot=Top_above_MDL_top_hits_plot ,height=6,width=10,units="in")
+ggsave("./Figures/Blanks above MDL by Analyte 2015-2019.jpeg",plot=Top_above_MDL_top_hits_plot ,height=6,width=11,units="in")
 
 #Ammonia Blanks FCEB vs EB
 NH3_FCEB_vs_EB <-Top_above_PQL_MDL %>%

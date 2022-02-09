@@ -126,7 +126,7 @@ write_csv(Percent_Samples_Qualified ,path="./N Contamination Data/Percent_Sample
 
 
 
-# Plot of qualifed data  --------------------------------------------------
+# Plot of qualifed data Figure 2 --------------------------------------------------
 
 
 Percent_Samples_Qualified_renamed <-Percent_Samples_Qualified %>% 
@@ -134,8 +134,8 @@ mutate(`Percent of Data Qualified as Result of Blank Contamination`=`Qualified D
 
 Percent_Samples_Qualified_renamed_plot  <-ggplot(Percent_Samples_Qualified_renamed ,aes(reorder(TEST_NAME,-`Percent of Data Qualified as Result of Blank Contamination`),`Percent of Data Qualified as Result of Blank Contamination`))+
 geom_col()+theme_bw()+
-theme(legend.position = "bottom",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=12),axis.text.y = element_text(size=12),axis.title.x = element_text(size = 14),axis.title.y = element_text(size = 14,hjust = 1))+
-labs(x="Analyte",y="Qualified Data from Blank Contamination (%)")+scale_y_continuous(breaks= pretty_breaks(n=10),labels = percent)
+theme(plot.margin = unit(c(.2,.2,.1,.75), "cm"),legend.position = "bottom",axis.text.x = element_text(angle = 60, vjust = 1, hjust=1,size=12),axis.text.y = element_text(size=12),axis.title.x = element_text(size = 14),axis.title.y = element_text(size = 14,hjust = 1))+
+labs(x="",y="Qualified Data from Blank Contamination (%)")+scale_y_continuous(breaks= pretty_breaks(n=10),labels = percent,limits = c(0,.073), expand = c(0, 0))
 
 ggsave("./Figures/Percent_Samples_Qualified_renamed_plot 2015-19.jpeg",plot=Percent_Samples_Qualified_renamed_plot  ,height=6,width=10,units="in")
 
